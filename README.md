@@ -1,2 +1,2 @@
 # yoroi
-refrence: **Yoroi: Updatable Whitebox Cryptography**
+reference: **Yoroi: Updatable Whitebox Cryptography**

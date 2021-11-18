@@ -41,7 +41,7 @@ def mul_M(x):
     
     for i in range(8):
         tmp = tools.mul_gf4(x0, M[i*8]) ^ tools.mul_gf4(x1, M[i*8+1]) ^ tools.mul_gf4(x2, M[i*8+2]) ^ tools.mul_gf4(x3, M[i*8+3]) ^ tools.mul_gf4(x4, M[i*8+4]) ^ tools.mul_gf4(x5, M[i*8+5]) ^ tools.mul_gf4(x6, M[i*8+6]) ^ tools.mul_gf4(x7, M[i*8+7])
-        x[i] = (x[i] & 0xfffffff0) ^ tmp
+        x[i] = (x[i] & 0xfff0) ^ tmp
 
 def mul_M_inv(x):
     x0 = x[0] & 0xf
@@ -55,11 +55,11 @@ def mul_M_inv(x):
 
     for i in range(8):
         tmp = tools.mul_gf4(x0, M_inv[i*8]) ^ tools.mul_gf4(x1, M_inv[i*8+1]) ^ tools.mul_gf4(x2, M_inv[i*8+2]) ^ tools.mul_gf4(x3, M_inv[i*8+3]) ^ tools.mul_gf4(x4, M_inv[i*8+4]) ^ tools.mul_gf4(x5, M_inv[i*8+5]) ^ tools.mul_gf4(x6, M_inv[i*8+6]) ^ tools.mul_gf4(x7, M_inv[i*8+7])
-        x[i] = (x[i] & 0xfffffff0) ^ tmp
+        x[i] = (x[i] & 0xfff0) ^ tmp
 
 def encrypt(x):
     # [1，R-1]-th rounds, R = 8
-    for i in range(1, 2):  # 1 <= i <= 15
+    for i in range(1, 8):
         # S-layer
         if i == 1:
             for j in range(8):
@@ -84,7 +84,7 @@ def encrypt(x):
 
 def decrypt(x):
     # [1，R-1]-th rounds
-    for i in range(1, 2):  # 1 <= i <= 8
+    for i in range(1, 8):
         # S-layer
         if i == 1:
             for j in range(8):
@@ -99,7 +99,7 @@ def decrypt(x):
 
         # Affine layer
         for j in range(8):
-            x[j] = x[j] ^ (2-i)
+            x[j] = x[j] ^ (8-i)
         
     # R-th round
     # S-layer
@@ -109,7 +109,7 @@ def decrypt(x):
     # AES layer
 def wb_encrypt(x):
     # [1，R-1]-th rounds, R = 8
-    for i in range(1, 2):  # 1 <= i <= 15
+    for i in range(1, 8):  # x[i] is 16-bit
         # S-layer
         if i == 1:
             for j in range(8):
@@ -131,19 +131,37 @@ def wb_encrypt(x):
         x[j] = T3[x[j]]
     pass
     # AES layer
-
+def printT():
+    print("static const u32 T3 = {", end="")
+    for i in range(len(T3)):
+        print(str(hex(T3[i]))+", ", end="")
+        if i > 0 and i % 2**8 == 0:
+            print("\\")
+    print("};")
 if __name__ == '__main__':
-    pass
-    x = [1,2,3,4,5,6,7,8]  # 8*16-bit
-    encrypt(x) 
-    print(x)
+    # printT()
+    # pass
+    x = [0x0011,0x2233,0x4455,0x6677,0x8899,0xaabb,0xccdd,0xeeff]  # 8*16-bit
+    # print(x)
+    # # mul_M_inv(x)
+    # # for i in x:
+    # #     print(hex(i), end="")
+    
+    # # black-box enc
+    # encrypt(x) 
+    # print(x)
 
-    y = [1,2,3,4,5,6,7,8]  # 8*16-bit
-    wb_encrypt(y) 
-    print(y)
+    # decrypt(x)
+    # print(x)
 
-    decrypt(x)
-    print(x)
+    y = [0x0011,0x2233,0x4455,0x6677,0x8899,0xaabb,0xccdd,0xeeff]  # 8*16-bit
+    # print(y)
+    
+    # white-box enc
+    wb_encrypt(y)
+    for i in y:
+        print(hex(i), end="")
+    # print(y)
 
-    decrypt(y)
-    print(y)
+    # decrypt(y)
+    # print(y)

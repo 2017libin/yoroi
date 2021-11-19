@@ -122,6 +122,61 @@ void mul_MINV88(u8 x[15]) {
   }
 }
 
+// enc in black-box context
+// the 6-byte key is used by S1,S2,S3 func
+void yoroi16_enc(u8 *x, u8 *key) {
+  u32 t1;  // temporary var
+  // the 1~(R-1)-th rounds, R = 8
+  for (int i = 1; i < 8; ++i) {
+    // S-layer
+    if (i == 1) {
+      for (int j = 0; j < 8; ++j) {
+        S1_16(x+j*2, key);
+      }
+    } else {
+      for (int j = 0; j < 8; ++j) {
+        S2_16(x+j*2, key+2);
+      }
+    }
+    // Affine layer
+    for (int j = 0; j < 8; ++j) {
+      x[j * 2 + 1] ^= i;  // only disturb the lsb4
+    }
+  }
+  for (int j = 0; j < 8; ++j) {
+        S3_16(x+j*2, key+4);
+  }
+  // AES layer
+  // ...
+}
+
+// dec in black-box context
+void yoroi16_dec(u8 *x, u8 *key) {
+  u32 t1;  // temporary var
+  // the 1~(R-1)-th rounds, R = 8
+  for (int i = 1; i < 8; ++i) {
+    // S-layer
+    if (i == 1) {
+      for (int j = 0; j < 8; ++j) {
+        S3INV_16(x+j*2, key+4);
+      }
+    } else {
+      for (int j = 0; j < 8; ++j) {
+        S2INV_16(x+j*2, key+2);
+      }
+    }
+    // Affine layer
+    for (int j = 0; j < 8; ++j) {
+      x[j * 2 + 1] ^= 8-i;  // only disturb the lsb4
+    }
+  }
+  for (int j = 0; j < 8; ++j) {
+        S1INV_16(x+j*2, key);
+  }
+  // AES layer
+  // ...
+}
+
 // regard the x[i*2]||x[i*+1] as a block, where i in [0, 7]
 void yoroi16_wbenc(u8 *x) {
   u32 t1;  // temporary var
@@ -156,26 +211,33 @@ void yoroi16_wbenc(u8 *x) {
   // ...
 }
 
-int main() {
+// test the enc and dec func in black-box context
+void test_enc_dec(){
   u8 key[6] = {0x11, 0x33, 0x55, 0x77, 0x99, 0xbb};
   u8 x[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
             0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
-  // for (int i = 0; i < 16; ++i){
-  //     if (x[i] > 9)
-  //         printf("%x", x[i]);
-  //     else
-  //         printf("0%x", x[i]);
-  // }
 
-  // yoroi16_enc(x, key);
-  // for (int i = 0; i < 16; ++i) {
-  //   if (x[i] > 9)
-  //     printf("%x", x[i]);
-  //   else
-  //     printf("0%x", x[i]);
-  // }
+  yoroi16_enc(x, key);
+  for (int i = 0; i < 16; ++i) {
+    if (x[i] > 9)
+      printf("%x", x[i]);
+    else
+      printf("0%x", x[i]);
+  }
+  printf("\n");
+ 
+  yoroi16_dec(x, key);
+  for (int i = 0; i < 16; ++i) {
+    if (x[i] > 9)
+      printf("%x", x[i]);
+    else
+      printf("0%x", x[i]);
+  }
+  printf("\n");
 
-  // printf("%d", mul_gf4(3, 10));
+}
 
+int main() {
+  test_enc_dec();
   return 0;
 }

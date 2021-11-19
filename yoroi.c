@@ -87,7 +87,7 @@ void yoroi16_enc(u8 *x){
         t1 = T3[t1];  // T3 is 16-bit table
         SPLITU16(t1, x[j*2], x[j*2+1]); 
     }
-
+    
     // AES layer
     // ...
 }

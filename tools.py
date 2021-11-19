@@ -90,7 +90,8 @@ def gen_T_16():
 
 
 if __name__ == '__main__':
-
+    x = get_prime(16)
+    print(x)
     x = 123
     x1 = sbox1[x]
     x2 = sbox2[x1]

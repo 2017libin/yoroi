@@ -20,59 +20,59 @@
 // }
 
 // data x and key is 16-bit
-void S1_16(u8 *x, u8 *key){
+void S1_16(u8 *x, u8 *key) {
   u32 t1, t2;  // temporary var
   u32 p = 62743;
-  t1 = MERGEU8(x[0],x[1]);
-  t2 = MERGEU8(key[0],key[1]);
-  t1 = (t2 + t1*p) % 65536;
+  t1 = MERGEU8(x[0], x[1]);
+  t2 = MERGEU8(key[0], key[1]);
+  t1 = (t2 + t1 * p) % 65536;
   SPLITU16(t1, x[0], x[1]);
 }
 
-void S1INV_16(u8 *x, u8 *key){
+void S1INV_16(u8 *x, u8 *key) {
   u32 t1, t2;  // temporary var
   u32 p_inv = 37543;
-  t1 = MERGEU8(x[0],x[1]);
-  t2 = MERGEU8(key[0],key[1]);
-  t1 = (t1-t2)*p_inv % 65536;
+  t1 = MERGEU8(x[0], x[1]);
+  t2 = MERGEU8(key[0], key[1]);
+  t1 = (t1 - t2) * p_inv % 65536;
   SPLITU16(t1, x[0], x[1]);
 }
 
 // data x and key is 16-bit
-void S2_16(u8 *x, u8 *key){
+void S2_16(u8 *x, u8 *key) {
   u32 t1, t2;  // temporary var
   u32 p = 63127;
-  t1 = MERGEU8(x[0],x[1]);
-  t2 = MERGEU8(key[0],key[1]);
-  t1 = (t2 + t1*p) % 65536;
+  t1 = MERGEU8(x[0], x[1]);
+  t2 = MERGEU8(key[0], key[1]);
+  t1 = (t2 + t1 * p) % 65536;
   SPLITU16(t1, x[0], x[1]);
 }
 
-void S2INV_16(u8 *x, u8 *key){
+void S2INV_16(u8 *x, u8 *key) {
   u32 t1, t2;  // temporary var
   u32 p_inv = 59687;
-  t1 = MERGEU8(x[0],x[1]);
-  t2 = MERGEU8(key[0],key[1]);
-  t1 = (t1-t2)*p_inv % 65536;
+  t1 = MERGEU8(x[0], x[1]);
+  t2 = MERGEU8(key[0], key[1]);
+  t1 = (t1 - t2) * p_inv % 65536;
   SPLITU16(t1, x[0], x[1]);
 }
 
 // data x and key is 16-bit
-void S3_16(u8 *x, u8 *key){
+void S3_16(u8 *x, u8 *key) {
   u32 t1, t2;  // temporary var
   u32 p = 58537;
-  t1 = MERGEU8(x[0],x[1]);
-  t2 = MERGEU8(key[0],key[1]);
-  t1 = (t2 + t1*p) % 65536;
+  t1 = MERGEU8(x[0], x[1]);
+  t2 = MERGEU8(key[0], key[1]);
+  t1 = (t2 + t1 * p) % 65536;
   SPLITU16(t1, x[0], x[1]);
 }
 
-void S3INV_16(u8 *x, u8 *key){
+void S3INV_16(u8 *x, u8 *key) {
   u32 t1, t2;  // temporary var
   u32 p_inv = 65433;
-  t1 = MERGEU8(x[0],x[1]);
-  t2 = MERGEU8(key[0],key[1]);
-  t1 = (t1-t2)*p_inv % 65536;
+  t1 = MERGEU8(x[0], x[1]);
+  t2 = MERGEU8(key[0], key[1]);
+  t1 = (t1 - t2) * p_inv % 65536;
   SPLITU16(t1, x[0], x[1]);
 }
 
@@ -131,11 +131,11 @@ void yoroi16_enc(u8 *x, u8 *key) {
     // S-layer
     if (i == 1) {
       for (int j = 0; j < 8; ++j) {
-        S1_16(x+j*2, key);
+        S1_16(x + j * 2, key);
       }
     } else {
       for (int j = 0; j < 8; ++j) {
-        S2_16(x+j*2, key+2);
+        S2_16(x + j * 2, key + 2);
       }
     }
     // Affine layer
@@ -144,7 +144,7 @@ void yoroi16_enc(u8 *x, u8 *key) {
     }
   }
   for (int j = 0; j < 8; ++j) {
-        S3_16(x+j*2, key+4);
+    S3_16(x + j * 2, key + 4);
   }
   // AES layer
   // ...
@@ -158,20 +158,20 @@ void yoroi16_dec(u8 *x, u8 *key) {
     // S-layer
     if (i == 1) {
       for (int j = 0; j < 8; ++j) {
-        S3INV_16(x+j*2, key+4);
+        S3INV_16(x + j * 2, key + 4);
       }
     } else {
       for (int j = 0; j < 8; ++j) {
-        S2INV_16(x+j*2, key+2);
+        S2INV_16(x + j * 2, key + 2);
       }
     }
     // Affine layer
     for (int j = 0; j < 8; ++j) {
-      x[j * 2 + 1] ^= 8-i;  // only disturb the lsb4
+      x[j * 2 + 1] ^= 8 - i;  // only disturb the lsb4
     }
   }
   for (int j = 0; j < 8; ++j) {
-        S1INV_16(x+j*2, key);
+    S1INV_16(x + j * 2, key);
   }
   // AES layer
   // ...
@@ -202,9 +202,9 @@ void yoroi16_wbenc(u8 *x) {
     }
   }
   for (int j = 0; j < 8; ++j) {
-        t1 = MERGEU8(x[j * 2], x[j * 2 + 1]);
-        t1 = T3[t1];  // T3 is 16-bit table
-        SPLITU16(t1, x[j * 2], x[j * 2 + 1]);
+    t1 = MERGEU8(x[j * 2], x[j * 2 + 1]);
+    t1 = T3[t1];  // T3 is 16-bit table
+    SPLITU16(t1, x[j * 2], x[j * 2 + 1]);
   }
 
   // AES layer
@@ -212,7 +212,7 @@ void yoroi16_wbenc(u8 *x) {
 }
 
 // test the enc and dec func in black-box context
-void test_enc_dec(){
+void test_enc_dec() {
   u8 key[6] = {0x11, 0x33, 0x55, 0x77, 0x99, 0xbb};
   u8 x[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
             0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
@@ -225,7 +225,7 @@ void test_enc_dec(){
       printf("0%x", x[i]);
   }
   printf("\n");
- 
+
   yoroi16_dec(x, key);
   for (int i = 0; i < 16; ++i) {
     if (x[i] > 9)
@@ -234,7 +234,6 @@ void test_enc_dec(){
       printf("0%x", x[i]);
   }
   printf("\n");
-
 }
 
 int main() {

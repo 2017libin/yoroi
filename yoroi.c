@@ -143,6 +143,7 @@ void yoroi16_enc(u8 *x, u8 *key) {
       x[j * 2 + 1] ^= i;  // only disturb the lsb4
     }
   }
+  // S-layer
   for (int j = 0; j < 8; ++j) {
         S3_16(x+j*2, key+4);
   }
@@ -170,6 +171,7 @@ void yoroi16_dec(u8 *x, u8 *key) {
       x[j * 2 + 1] ^= 8-i;  // only disturb the lsb4
     }
   }
+  // S-layer
   for (int j = 0; j < 8; ++j) {
         S1INV_16(x+j*2, key);
   }
@@ -211,6 +213,38 @@ void yoroi16_wbenc(u8 *x) {
   // ...
 }
 
+void yoroi16_wbdec(u8 *x) {
+  u32 t1;  // temporary var
+  // the 1~(R-1)-th rounds, R = 8
+  for (int i = 1; i < 8; ++i) {
+    // S-layer
+    if (i == 1) {
+      for (int j = 0; j < 8; ++j) {
+        t1 = MERGEU8(x[j * 2], x[j * 2 + 1]);
+        t1 = T3_inv[t1];  // T1 is 16-bit table
+        SPLITU16(t1, x[j * 2], x[j * 2 + 1]);
+      }
+    } else {
+      for (int j = 0; j < 8; ++j) {
+        t1 = MERGEU8(x[j * 2], x[j * 2 + 1]);
+        t1 = T2_inv[t1];  // T2 is 16-bit table
+        SPLITU16(t1, x[j * 2], x[j * 2 + 1]);
+      }
+    }
+    // Affine layer
+    for (int j = 0; j < 8; ++j) {
+      x[j * 2 + 1] ^= 8-i;  // only disturb the lsb4
+    }
+  }
+  for (int j = 0; j < 8; ++j) {
+        t1 = MERGEU8(x[j * 2], x[j * 2 + 1]);
+        t1 = T1_inv[t1];  // T3 is 16-bit table
+        SPLITU16(t1, x[j * 2], x[j * 2 + 1]);
+  }
+
+  // AES layer
+  // ...
+}
 // test the enc and dec func in black-box context
 void test_enc_dec(){
   u8 key[6] = {0x11, 0x33, 0x55, 0x77, 0x99, 0xbb};
@@ -237,7 +271,32 @@ void test_enc_dec(){
 
 }
 
+// test the enc and dec func in black-box context
+void test_wbenc_wbdec(){
+  u8 x[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+            0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+
+  yoroi16_wbenc(x);
+  for (int i = 0; i < 16; ++i) {
+    if (x[i] > 9)
+      printf("%x", x[i]);
+    else
+      printf("0%x", x[i]);
+  }
+  printf("\n");
+
+  yoroi16_wbdec(x);
+  for (int i = 0; i < 16; ++i) {
+    if (x[i] > 9)
+      printf("%x", x[i]);
+    else
+      printf("0%x", x[i]);
+  }
+  printf("\n");
+
+}
+
 int main() {
-  test_enc_dec();
+  test_wbenc_wbdec();
   return 0;
 }

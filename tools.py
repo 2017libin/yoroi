@@ -90,6 +90,13 @@ def gen_T_16():
 
 
 if __name__ == '__main__':
+    # gen sboxinv_4
+    sbox = [0,1,9,0xe,0xd,0xb,7,6,0xf,2,0xc,5,0xa,4,3,8]
+    sboxinv = [0]*16
+    for i in range(len(sbox)):
+        sboxinv[sbox[i]] = i
+    print(sboxinv)
+    
     x = get_prime(16)
     print(x)
     x = 123

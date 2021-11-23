@@ -1,6 +1,99 @@
 #include "yoroi.h"
 #include "T_tables.h"
 
+// Small Scale Variants of PRESENT
+// state and subkey is the list of 4-bit
+void enc_12(u8 *state, u8 *subkey){
+  u8 r = 1;
+  u8 p;
+  u32 t;
+  // generateRoundKeys()
+
+  // 0~(r-1)-th rounds, where r = 10
+  for(int i = 0; i < r; ++i){
+
+    // addRoundKey
+    for(int j = 0; j < 3; ++j){
+      state[j] = state[j] ^ subkey[i*3 + j];
+    }
+
+    // sBoxLayer
+    for(int j = 0; j < 3; ++j){
+      state[j] = SBOX_4[state[j]];
+    }
+
+    // pLayer
+    // the 12-bit state is denoted as s11s10...s1s0
+    t = 0;  // t is the ans of bit permutation
+    for(int j = 2; j >= 0; --j){
+      for(int n = 0; n < 4; ++n){
+        if((2-j)*4+n < 11){
+          p = 3*((2-j)*4+n) % 11;  // P(i) = n*i mod (4n-1) for 0 <= i < 4n-1
+          t += ((state[i] >> n) & 1) << p;
+        }else{
+          t += ((state[i] >> 3) & 1) << 11;  // p(i) = 4n-1 for i = 4n-1
+        }
+      }
+    }
+    // update the state by the ans of bit permutation
+    for(int j = 0; j < 3; ++j){  
+      state[2-j] = (t >> (j*4)) & 0xf;
+    }
+  }
+
+  // the r-round
+  // addRoundKey
+  for(int j = 0; j < 3; ++j){
+    state[j] = state[j] ^ subkey[r*3 + j];
+  }
+}
+
+
+void dec_12(u8 *state, u8 *subkey){
+  u8 r = 1;
+  u8 p;
+  u32 t;
+  // generateRoundKeys()
+
+  // 0~(r-1)-th rounds, where r = 10
+  for(int i = 0; i < r; ++i){
+
+    // addRoundKey
+    for(int j = 0; j < 3; ++j){
+      state[j] = state[j] ^ subkey[i*3 + j];
+    }
+
+    // sBoxLayer
+    for(int j = 0; j < 3; ++j){
+      state[j] = SBOXINV_4[state[j]];
+    }
+
+    // pLayer
+    // 12-bit state denoted s11s10...s1s0
+    t = 0;  // t is the ans of bit permutation
+    for(int j = 2; j >= 0; --j){
+      for(int n = 0; n < 4; ++n){
+        if((2-j)*4+n < 11){
+          p = 4*((2-j)*4+n) % 11;  // P(i) = 4*i mod (4n-1) for 0 <= i < 4n-1
+          t += ((state[i] >> n) & 1) << p;
+        }else{
+          t += ((state[i] >> 3) & 1) << 11;  // p(i) = 4n-1 for i = 4n-1
+        }
+      }
+    }
+    // update the state by the ans of bit permutation
+    for(int j = 0; j < 3; ++j){
+      state[2-j] = (t >> (j*4)) & 0xf;
+    }
+  }
+
+  // the r-round
+  // addRoundKey
+  for(int j = 0; j < 3; ++j){
+    state[j] = state[j] ^ subkey[r*3 + j];
+  }
+}
+
 // key-dependent bijective 16-bit S-box
 void S_16(u8 *state, u8 *subkey){
   u8 t0,t1;  // temporary var
@@ -352,8 +445,31 @@ void test_S16_SINV16(){
   printf("\n");
 }
 
+void test_enc12_dec12(){
+  u8 x[] = {0x1, 0x2, 0x3};
+  u8 enck[] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6};
+  u8 deck[] = {0x4, 0x5, 0x6, 0x1, 0x2, 0x3};
+  enc_12(x,enck);
+  for (int i = 0; i < 3; ++i) {
+    if (x[i] > 15)
+      printf("%x", x[i]);
+    else
+      printf("0%x", x[i]);
+  }
+  printf("\n");
+
+  dec_12(x, deck);
+  for (int i = 0; i < 3; ++i) {
+    if (x[i] > 15)
+      printf("%x", x[i]);
+    else
+      printf("0%x", x[i]);
+  }
+  printf("\n");
+}
+
 int main() {
   printf("hello world!\n");
-  test_S16_SINV16();
+  test_enc12_dec12();
   return 0;
 }

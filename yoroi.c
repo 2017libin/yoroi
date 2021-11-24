@@ -1,6 +1,7 @@
 #include "yoroi.h"
 #include "T_tables.h"
-
+#define PRINT 0
+void print_bytes(u8 *, int);
 // Small Scale Variants of PRESENT
 // state and subkey is the list of 4-bit
 void enc_12(u8 *state, u8 *subkey){
@@ -8,7 +9,11 @@ void enc_12(u8 *state, u8 *subkey){
   u8 p;
   u32 t;
   // generateRoundKeys()
-
+#if PRINT
+  printf("1\n");
+  print_bytes(state, 3);
+  print_bytes(subkey, 3);
+#endif
   // 0~(r-1)-th rounds, where r = 10
   for(int i = 0; i < r; ++i){
 
@@ -16,12 +21,18 @@ void enc_12(u8 *state, u8 *subkey){
     for(int j = 0; j < 3; ++j){
       state[j] = state[j] ^ subkey[i*3 + j];
     }
-
+#if PRINT
+    printf("2\n");
+    print_bytes(state, 3);
+#endif
     // sBoxLayer
     for(int j = 0; j < 3; ++j){
       state[j] = SBOX_4[state[j]];
     }
-
+#if PRINT
+    printf("3\n");
+    print_bytes(state, 3);
+#endif
     // pLayer
     // the 12-bit state is denoted as s11s10...s1s0
     t = 0;  // t is the ans of bit permutation
@@ -29,9 +40,12 @@ void enc_12(u8 *state, u8 *subkey){
       for(int n = 0; n < 4; ++n){
         if((2-j)*4+n < 11){
           p = 3*((2-j)*4+n) % 11;  // P(i) = n*i mod (4n-1) for 0 <= i < 4n-1
-          t += ((state[i] >> n) & 1) << p;
+#if PRINT
+          printf("%d -> %d\n",(2-j)*4+n, p);
+#endif
+          t += ((state[j] >> n) & 1) << p;
         }else{
-          t += ((state[i] >> 3) & 1) << 11;  // p(i) = 4n-1 for i = 4n-1
+          t += ((state[j] >> 3) & 1) << 11;  // p(i) = 4n-1 for i = 4n-1
         }
       }
     }
@@ -39,6 +53,10 @@ void enc_12(u8 *state, u8 *subkey){
     for(int j = 0; j < 3; ++j){  
       state[2-j] = (t >> (j*4)) & 0xf;
     }
+#if PRINT
+    printf("4\n");
+    print_bytes(state, 3);
+#endif
   }
 
   // the r-round
@@ -46,15 +64,23 @@ void enc_12(u8 *state, u8 *subkey){
   for(int j = 0; j < 3; ++j){
     state[j] = state[j] ^ subkey[r*3 + j];
   }
+#if PRINT
+  printf("5\n");
+  print_bytes(state, 3);
+#endif
 }
 
 
 void dec_12(u8 *state, u8 *subkey){
   u8 r = 1;
   u8 p;
-  u32 t;
+  u32 t1, t2;
   // generateRoundKeys()
-
+#if PRINT
+  printf("1:\n");
+  print_bytes(state, 3);
+  print_bytes(subkey, 3);
+#endif
   // 0~(r-1)-th rounds, where r = 10
   for(int i = 0; i < r; ++i){
 
@@ -62,29 +88,43 @@ void dec_12(u8 *state, u8 *subkey){
     for(int j = 0; j < 3; ++j){
       state[j] = state[j] ^ subkey[i*3 + j];
     }
-
+#if PRINT
+    printf("2:\n");
+    print_bytes(state, 3);
+#endif
+    // pLayer
+    // 12-bit state denoted s11s10...s1s0
+    t1 = 0;  // t is the ans of bit permutation
+    t2 = (state[2]&0xf) + ((state[1]&0xf)<<4) + ((state[0]&0xf)<<8);
+#if PRINT
+    printf("t2：%x\n",(((t2 >> 7)&1) << 6));
+#endif
+    for(int j = 0; j < 11; ++j){
+      p = 4*j % 11;
+      t1 += (((t2 >> j)&1) << p);
+#if PRINT
+      printf("%d -> %d\n", j, p);
+      printf("%x\n",t1);
+#endif
+    }
+    t1 += (t2>>11) << 11;
+    // update the state by the ans of bit permutation
+    for(int j = 0; j < 3; ++j){
+      state[2-j] = (t1 >> (j*4)) & 0xf;
+    }
+#if PRINT
+    printf("3:\n");
+    print_bytes(state, 3);
+#endif
     // sBoxLayer
     for(int j = 0; j < 3; ++j){
       state[j] = SBOXINV_4[state[j]];
     }
+#if PRINT
+    printf("4:\n");
+    print_bytes(state, 3);
+#endif
 
-    // pLayer
-    // 12-bit state denoted s11s10...s1s0
-    t = 0;  // t is the ans of bit permutation
-    for(int j = 2; j >= 0; --j){
-      for(int n = 0; n < 4; ++n){
-        if((2-j)*4+n < 11){
-          p = 4*((2-j)*4+n) % 11;  // P(i) = 4*i mod (4n-1) for 0 <= i < 4n-1
-          t += ((state[i] >> n) & 1) << p;
-        }else{
-          t += ((state[i] >> 3) & 1) << 11;  // p(i) = 4n-1 for i = 4n-1
-        }
-      }
-    }
-    // update the state by the ans of bit permutation
-    for(int j = 0; j < 3; ++j){
-      state[2-j] = (t >> (j*4)) & 0xf;
-    }
   }
 
   // the r-round
@@ -92,6 +132,11 @@ void dec_12(u8 *state, u8 *subkey){
   for(int j = 0; j < 3; ++j){
     state[j] = state[j] ^ subkey[r*3 + j];
   }
+#if PRINT
+  printf("5:\n");
+  print_bytes(state, 3);
+#endif
+
 }
 
 // key-dependent bijective 16-bit S-box
@@ -371,6 +416,15 @@ void yoroi16_wbdec(u8 *x) {
   // ...
 }
 
+void print_bytes(u8 *x, int len){
+  for (int i = 0; i < len; ++i) {
+    if (x[i] > 16)
+      printf("%x", x[i]);
+    else
+      printf("0%x", x[i]);
+  }
+  printf("\n");
+}
 // test the enc and dec func in black-box context
 void test_enc_dec() {
   u8 key[6] = {0x11, 0x33, 0x55, 0x77, 0x99, 0xbb};
@@ -445,9 +499,9 @@ void test_S16_SINV16(){
 }
 
 void test_enc12_dec12(){
-  u8 x[] = {0x1, 0x2, 0x3};
-  u8 enck[] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6};
-  u8 deck[] = {0x4, 0x5, 0x6, 0x1, 0x2, 0x3};
+  u8 x[] = {0x0f, 0x03, 0x04};
+  u8 enck[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
+  u8 deck[] = {0x04, 0x05, 0x06, 0x01, 0x02, 0x03};
   enc_12(x,enck);
   for (int i = 0; i < 3; ++i) {
     if (x[i] > 15)

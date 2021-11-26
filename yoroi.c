@@ -1,10 +1,37 @@
 #include "yoroi.h"
 #include "T_tables.h"
 #define PRINT 0
+#define ROUNDS 1
 void print_bytes(u8 *, int);
+
+// master_key is the list of 8-bit
+// round_key is the list of 4-bit
+void present_keyschedule_12(u8 *master_key, u8 *round_key){  // the bit size of a round_key is 12 
+  u8 tmp[10];
+  for(int i = 0; i < ROUNDS+1; ++i){
+    // rotated right shift 19-bit
+    for(int j = 0; j < 10; ++j)
+      tmp[j] = (master_key[2+j % 10] >> 3) + ((master_key[3+j % 10]^7) << 5);
+    for(int j = 0; j < 10; ++j)
+      master_key[j] = tmp[j];
+    
+    // the most significant 4-bit through the PRESENT S-box
+    master_key[9] = (SBOX_4[master_key[9]>>4] << 4) + (master_key[9]&0xf);
+
+    // the bits k19k18k17k16k15 is exclusive-ored with the round_counter
+    master_key[1] = master_key[1] ^ ((i&0x01)<<7);  // k15 ^ round_counter[0]
+    master_key[2] = master_key[2] ^ ((i&0x1e)>>1);  // k19k18k17k16 ^ round_counter[1]~[4]
+
+    // a round_key consists the last significant 12-bit
+    round_key[i*3] = master_key[0]&0xf;
+    round_key[i*3+1] = (master_key[0]>>4)&0xf;
+    round_key[i*3+2] = master_key[1]&0xf;
+  }
+}
+
 // Small Scale Variants of PRESENT
 // state and subkey is the list of 4-bit
-void enc_12(u8 *state, u8 *subkey){
+void present_enc_12(u8 *state, u8 *subkey){  // the bit size of a block is 12
   u8 r = 1;
   u8 p;
   u32 t;
@@ -15,8 +42,7 @@ void enc_12(u8 *state, u8 *subkey){
   print_bytes(subkey, 3);
 #endif
   // 0~(r-1)-th rounds, where r = 10
-  for(int i = 0; i < r; ++i){
-
+  for(int i = 0; i < ROUNDS; ++i){
     // addRoundKey
     for(int j = 0; j < 3; ++j){
       state[j] = state[j] ^ subkey[i*3 + j];
@@ -62,16 +88,15 @@ void enc_12(u8 *state, u8 *subkey){
   // the r-round
   // addRoundKey
   for(int j = 0; j < 3; ++j){
-    state[j] = state[j] ^ subkey[r*3 + j];
+    state[j] = state[j] ^ subkey[ROUNDS*3 + j];
   }
-#if PRINT
+#if PRINT 
   printf("5\n");
   print_bytes(state, 3);
 #endif
 }
 
-
-void dec_12(u8 *state, u8 *subkey){
+void present_dec_12(u8 *state, u8 *subkey){
   u8 r = 1;
   u8 p;
   u32 t1, t2;
@@ -82,7 +107,7 @@ void dec_12(u8 *state, u8 *subkey){
   print_bytes(subkey, 3);
 #endif
   // 0~(r-1)-th rounds, where r = 10
-  for(int i = 0; i < r; ++i){
+  for(int i = 0; i < ROUNDS; ++i){
 
     // addRoundKey
     for(int j = 0; j < 3; ++j){
@@ -130,7 +155,7 @@ void dec_12(u8 *state, u8 *subkey){
   // the r-round
   // addRoundKey
   for(int j = 0; j < 3; ++j){
-    state[j] = state[j] ^ subkey[r*3 + j];
+    state[j] = state[j] ^ subkey[r=ROUNDS*3 + j];
   }
 #if PRINT
   printf("5:\n");
@@ -502,7 +527,7 @@ void test_enc12_dec12(){
   u8 x[] = {0x0f, 0x03, 0x04};
   u8 enck[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
   u8 deck[] = {0x04, 0x05, 0x06, 0x01, 0x02, 0x03};
-  enc_12(x,enck);
+  present_enc_12(x,enck);
   for (int i = 0; i < 3; ++i) {
     if (x[i] > 15)
       printf("%x", x[i]);
@@ -511,7 +536,7 @@ void test_enc12_dec12(){
   }
   printf("\n");
 
-  dec_12(x, deck);
+  present_dec_12(x,deck);
   for (int i = 0; i < 3; ++i) {
     if (x[i] > 15)
       printf("%x", x[i]);

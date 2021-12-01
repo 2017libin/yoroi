@@ -1,8 +1,10 @@
 #include "yoroi.h"
 #include "T_tables.h"
+#include "Hash_DRBG/header/rand.h"
+
 #define PRINT 0
 #define ROUNDS 1
-void print_bytes(u8 *, int);
+void print_bytes_(u8 *, int);
 
 // master_key is the list of 8-bit
 // round_key is the list of 4-bit
@@ -38,8 +40,8 @@ void present_enc_12(u8 *state, u8 *subkey){  // the bit size of a block is 12
   // generateRoundKeys()
 #if PRINT
   printf("1\n");
-  print_bytes(state, 3);
-  print_bytes(subkey, 3);
+  print_bytes_(state, 3);
+  print_bytes_(subkey, 3);
 #endif
   // 0~(r-1)-th rounds, where r = 10
   for(int i = 0; i < ROUNDS; ++i){
@@ -49,7 +51,7 @@ void present_enc_12(u8 *state, u8 *subkey){  // the bit size of a block is 12
     }
 #if PRINT
     printf("2\n");
-    print_bytes(state, 3);
+    print_bytes_(state, 3);
 #endif
     // sBoxLayer
     for(int j = 0; j < 3; ++j){
@@ -57,7 +59,7 @@ void present_enc_12(u8 *state, u8 *subkey){  // the bit size of a block is 12
     }
 #if PRINT
     printf("3\n");
-    print_bytes(state, 3);
+    print_bytes_(state, 3);
 #endif
     // pLayer
     // the 12-bit state is denoted as s11s10...s1s0
@@ -81,7 +83,7 @@ void present_enc_12(u8 *state, u8 *subkey){  // the bit size of a block is 12
     }
 #if PRINT
     printf("4\n");
-    print_bytes(state, 3);
+    print_bytes_(state, 3);
 #endif
   }
 
@@ -92,7 +94,7 @@ void present_enc_12(u8 *state, u8 *subkey){  // the bit size of a block is 12
   }
 #if PRINT 
   printf("5\n");
-  print_bytes(state, 3);
+  print_bytes_(state, 3);
 #endif
 }
 
@@ -103,8 +105,8 @@ void present_dec_12(u8 *state, u8 *subkey){
   // generateRoundKeys()
 #if PRINT
   printf("1:\n");
-  print_bytes(state, 3);
-  print_bytes(subkey, 3);
+  print_bytes_(state, 3);
+  print_bytes_(subkey, 3);
 #endif
   // 0~(r-1)-th rounds, where r = 10
   for(int i = 0; i < ROUNDS; ++i){
@@ -115,7 +117,7 @@ void present_dec_12(u8 *state, u8 *subkey){
     }
 #if PRINT
     printf("2:\n");
-    print_bytes(state, 3);
+    print_bytes_(state, 3);
 #endif
     // pLayer
     // 12-bit state denoted s11s10...s1s0
@@ -139,7 +141,7 @@ void present_dec_12(u8 *state, u8 *subkey){
     }
 #if PRINT
     printf("3:\n");
-    print_bytes(state, 3);
+    print_bytes_(state, 3);
 #endif
     // sBoxLayer
     for(int j = 0; j < 3; ++j){
@@ -147,7 +149,7 @@ void present_dec_12(u8 *state, u8 *subkey){
     }
 #if PRINT
     printf("4:\n");
-    print_bytes(state, 3);
+    print_bytes_(state, 3);
 #endif
 
   }
@@ -159,7 +161,7 @@ void present_dec_12(u8 *state, u8 *subkey){
   }
 #if PRINT
   printf("5:\n");
-  print_bytes(state, 3);
+  print_bytes_(state, 3);
 #endif
 
 }
@@ -441,7 +443,7 @@ void yoroi16_wbdec(u8 *x) {
   // ...
 }
 
-void print_bytes(u8 *x, int len){
+void print_bytes_(u8 *x, int len){
   for (int i = 0; i < len; ++i) {
     if (x[i] > 16)
       printf("%x", x[i]);
@@ -546,8 +548,55 @@ void test_enc12_dec12(){
   printf("\n");
 }
 
+int test_HashDrbg();
+
 int main() {
   printf("hello world!\n");
-  test_enc12_dec12();
+  test_HashDrbg();
+  // test_enc12_dec12();
   return 0;
+}
+
+int test_HashDrbg()
+{
+    void *ctx;
+    size_t len = 50;
+    unsigned char bytes[len];
+    size_t seed_len = 60;  // 至少超过55byte
+    unsigned char seed[seed_len];
+    size_t add_len = 60;
+    unsigned char add[add_len];
+    int ret;
+    // 分配空间并初始化ctx
+    ret = anyan_rand_new_and_init(&ctx);
+
+    // 获得长度为len的随机字节
+    if(ret == 0){  // ret为0表示正确初始化
+        ret = anyan_rand_seed(ctx, seed, seed_len);
+    }else{
+        printf("ctx new 或 init 出错！\nerror code: %d\n",ret);
+        return -1;
+    }
+    // 获得长度为len的随机字节
+    if(ret == 0){  // ret为0表示正确初始化
+        ret = anyan_rand_bytes_with_add(ctx, bytes, len, add, add_len);
+    }else{
+        printf("ctx new 或 init 出错！\nerror code: %x\n",ret);
+        return -1;
+    }
+    if (ret == 0){  // ret为0表示成功获取随机字节
+        printf("rand bytes: \n");
+        for (int i = 0; i < len; ++i)
+        {
+            printf("%d, ", bytes[i]);
+        }
+        printf("\n");
+    }else{
+        printf("生成rand bytes出错！\nerror code: %x\n", ret);
+        anyan_rand_free(ctx);
+        return -1;
+    }
+    // 释放ctx空间
+    anyan_rand_free(ctx);
+    return 0;
 }

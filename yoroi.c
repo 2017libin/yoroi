@@ -1,11 +1,37 @@
 #include "yoroi.h"
 #include "T_tables.h"
 #include "Hash_DRBG/header/rand.h"
+#include <string.h>
+
+// 8 bytes -> long unsigned int
+#define GET_SIZE_BE(n,b,i) {                      \
+    (n) = ( (size_t) (b)[(i)    ] << 56 )         \
+        | ( (size_t) (b)[(i) + 1] << 48 )         \
+        | ( (size_t) (b)[(i) + 2] << 40 )         \
+        | ( (size_t) (b)[(i) + 3] << 32 )         \
+        | ( (size_t) (b)[(i) + 4] << 24 )         \
+        | ( (size_t) (b)[(i) + 5] << 16 )         \
+        | ( (size_t) (b)[(i) + 6] <<  8 )         \
+        | ( (size_t) (b)[(i) + 7]       ); }
+
+// long unsigned int -> 8 bytes
+#define PUT_SIZE_BE(n,b,i) {                      \
+    (b)[(i)    ] = (unsigned char) ( (n) >> 56 );   \
+    (b)[(i) + 1] = (unsigned char) ( (n) >> 48 );   \
+    (b)[(i) + 2] = (unsigned char) ( (n) >> 40 );   \
+    (b)[(i) + 3] = (unsigned char) ( (n) >> 32 );   \
+    (b)[(i) + 4] = (unsigned char) ( (n) >> 24 );   \
+    (b)[(i) + 5] = (unsigned char) ( (n) >> 16 );   \
+    (b)[(i) + 6] = (unsigned char) ( (n) >>  8 );   \
+    (b)[(i) + 7] = (unsigned char) ( (n)       ); }
 
 #define PRINT 0
 #define ROUNDS 1
+#define OUT_LEN_OF_KDF  50  // byte-len
+
 // input: s (seed) and x (input variable)
 // output: rand (rand bytes, the output of hash_drbg)
+// return: 0 if success, else -1
 int PRF(u8 *s, size_t s_len, u8 *x, size_t x_len, u8 *rand, size_t rand_len)
 {
     void *ctx;
@@ -51,6 +77,37 @@ int PRF(u8 *s, size_t s_len, u8 *x, size_t x_len, u8 *rand, size_t rand_len)
     return 0;
 }
 
+// input: KI (key derivation key), lable(the purpose of KO), context(the information related to KO)
+// output: KO (keying material)
+void KDF_ctr(const u8 *KI, size_t KI_len, u8 *lable, size_t lable_len, u8 *context, size_t context_len, u8 *KO, size_t KO_len){
+  size_t n, i, size_len, add_len;
+  n = (KO_len / OUT_LEN_OF_KDF) + 1;  // at least run n times PRF
+  size_len = sizeof(size_t);  
+  add_len = size_len+lable_len+1+context_len+size_len;
+
+  u8 add[add_len];  // the input variable for PRF
+
+  u8 *KO_t = KO;
+  size_t KO_len_t = KO_len;
+  
+  for (i = 0; i < n; ++i){
+    // add = [i]2 || lable || 0x00 || context || [KO_len]2 
+    memcpy(add, &i, size_len);
+    memcpy(add+size_len, lable, lable_len);
+    memcpy(add+size_len+lable_len, 0, 1);
+    memcpy(add+size_len+lable_len+1, context, context_len);
+    memcpy(add+size_len+lable_len+1+context_len, &KO_len, size_len);
+
+    if(KO_len_t > OUT_LEN_OF_KDF){
+      PRF(KI, KI_len, add, add_len, KO_t, OUT_LEN_OF_KDF);
+      KO_t += OUT_LEN_OF_KDF;
+      KO_len_t -= OUT_LEN_OF_KDF;
+    }else{
+      PRF(KI, KI_len, add, add_len, KO_t, KO_len_t);  // the last block
+      break;    
+    }
+  }
+}
 // master_key is the list of 8-bit
 // round_key is the list of 4-bit
 void present_keyschedule_12(u8 *master_key, u8 *round_key){  // the bit size of a round_key is 12 
@@ -593,19 +650,6 @@ void test_enc12_dec12(){
   printf("\n");
 }
 
-int test_HashDrbg();
-
-int main() {
-  printf("hello world!\n");
-  // test_HashDrbg();
-  u8 s[80];
-  u8 x[80];
-  u8 rand[50];
-  PRF(s, 80, x, 80, rand, 50);
-  // test_enc12_dec12();
-  return 0;
-}
-
 int test_HashDrbg()
 {
     void *ctx;
@@ -648,4 +692,24 @@ int test_HashDrbg()
     // 释放ctx空间
     anyan_rand_free(ctx);
     return 0;
+}
+
+int main() {
+  printf("hello world!\n");
+  size_t T = 132561651;
+  u8 tmp[10];
+  u8 t[8];
+  PUT_SIZE_BE(T, t, 0);
+  memcpy(tmp, &T, sizeof(T));
+  printf("%x\n", T);
+  for(int i = 0; i < 8; ++i){
+    printf("%x\n", t[i]);
+  }
+  // test_HashDrbg();
+  // u8 s[80];
+  // u8 x[80];
+  // u8 rand[50];
+  // PRF(s, 80, x, 80, rand, 50);
+  // test_enc12_dec12();
+  return 0;
 }

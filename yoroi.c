@@ -4,7 +4,52 @@
 
 #define PRINT 0
 #define ROUNDS 1
-void print_bytes_(u8 *, int);
+// input: s (seed) and x (input variable)
+// output: rand (rand bytes, the output of hash_drbg)
+int PRF(u8 *s, size_t s_len, u8 *x, size_t x_len, u8 *rand, size_t rand_len)
+{
+    void *ctx;
+    size_t len = 50;
+    unsigned char bytes[len];
+    size_t seed_len = 60;  // at least 55-byte
+    unsigned char seed[seed_len];
+    size_t add_len = 60;
+    unsigned char add[add_len];
+    int ret;
+    // allocate memory and initial ctx
+    ret = anyan_rand_new_and_init(&ctx);
+
+    if(ret == 0){  // return 0 if success
+        ret = anyan_rand_seed(ctx, s, s_len);
+    }else{
+        printf("ctx new 或 init 出错！\nerror code: %d\n",ret);
+        return -1;
+    }
+
+    if(ret == 0){  // return 0 if success
+        ret = anyan_rand_bytes_with_add(ctx, rand, rand_len, x, x_len);
+    }else{
+        printf("ctx new 或 init 出错！\nerror code: %x\n",ret);
+        return -1;
+    }
+    if (ret == 0){  // return 0 if success
+#if PRINT
+        printf("rand bytes: \n");
+        for (int i = 0; i < rand_len; ++i)
+        {
+            printf("%d, ", rand[i]);
+        }
+        printf("\n");
+#endif
+    }else{
+        printf("生成rand bytes出错！\nerror code: %x\n", ret);
+        anyan_rand_free(ctx);
+        return -1;
+    }
+    // 释放ctx空间
+    anyan_rand_free(ctx);
+    return 0;
+}
 
 // master_key is the list of 8-bit
 // round_key is the list of 4-bit
@@ -552,7 +597,11 @@ int test_HashDrbg();
 
 int main() {
   printf("hello world!\n");
-  test_HashDrbg();
+  // test_HashDrbg();
+  u8 s[80];
+  u8 x[80];
+  u8 rand[50];
+  PRF(s, 80, x, 80, rand, 50);
   // test_enc12_dec12();
   return 0;
 }

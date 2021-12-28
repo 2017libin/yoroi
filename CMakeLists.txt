@@ -1,18 +1,33 @@
-cmake_minimum_required(VERSION 3.1)
+# 1. Set cmake version
+cmake_minimum_required(VERSION 3.2)
 
-# project's name
-project(Yoroi)
+# 2. Set project name
+PROJECT(yoroi)
 
-# add all sources in current directory to DIR_SRCS
-aux_source_directory(. DIR_SRCS)
+SET(BUILD_NAME main)
 
-# 
-add_subdirectory(Hash_DRBG/src)
+# ------------------
+# Compiler Environment Configure
+#
+message(STATUS "CMAKE_BUILD_TYPE:\t" ${CMAKE_BUILD_TYPE})
 
-# add header directory
-INCLUDE_DIRECTORIES(./Hash_DRBG/header)
+set(CMAKE_C_FLAGS_RELEASE     "-O2")
 
-# 
-add_executable(main1 ${DIR_SRCS})
+########################## source file  ##########################
+AUX_SOURCE_DIRECTORY(sample SRCS)
+AUX_SOURCE_DIRECTORY(src SRCS)
 
-target_link_libraries(main1 hash_drbg)
+add_executable(${BUILD_NAME} ${SRCS})
+
+########################## headers  ##########################
+INCLUDE_DIRECTORIES(include)
+
+########################## link lib  ##########################
+if(KEYSTORE_LINKS)
+    message(STATUS KEYSTORE_LINKS: ${KEYSTORE_LINKS})
+    TARGET_LINK_LIBRARIES(${BUILD_NAME} ${KEYSTORE_LINKS} )
+ENDIF(KEYSTORE_LINKS)
+
+add_subdirectory(lib/mbedtls EXCLUDE_FROM_ALL)
+# link to mbedtls
+target_link_libraries(${BUILD_NAME} PUBLIC mbedtls)

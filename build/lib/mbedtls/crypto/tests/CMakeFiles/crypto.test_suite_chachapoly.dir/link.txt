@@ -1,0 +1,1 @@
+/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow -Wno-unused-function  -rdynamic CMakeFiles/crypto.test_suite_chachapoly.dir/test_suite_chachapoly.c.o  -o crypto.test_suite_chachapoly  ../library/libmbedcrypto.a 

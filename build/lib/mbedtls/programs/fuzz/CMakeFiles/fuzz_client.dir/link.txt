@@ -1,0 +1,1 @@
+/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow  -rdynamic CMakeFiles/fuzz_client.dir/fuzz_client.c.o CMakeFiles/fuzz_client.dir/common.c.o CMakeFiles/fuzz_client.dir/onefile.c.o  -o fuzz_client  ../../library/libmbedtls.a ../../library/libmbedx509.a ../../crypto/library/libmbedcrypto.a 

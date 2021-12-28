@@ -1,0 +1,1 @@
+/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow -Wno-unused-function  -rdynamic CMakeFiles/test_suite_x509parse.dir/test_suite_x509parse.c.o  -o test_suite_x509parse  ../library/libmbedtls.a ../library/libmbedx509.a ../crypto/library/libmbedcrypto.a 

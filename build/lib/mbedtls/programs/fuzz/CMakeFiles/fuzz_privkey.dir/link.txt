@@ -1,0 +1,1 @@
+/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow  -rdynamic CMakeFiles/fuzz_privkey.dir/fuzz_privkey.c.o CMakeFiles/fuzz_privkey.dir/onefile.c.o  -o fuzz_privkey  ../../library/libmbedtls.a ../../library/libmbedx509.a ../../crypto/library/libmbedcrypto.a 

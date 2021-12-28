@@ -1,0 +1,1 @@
+/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow  -rdynamic CMakeFiles/fuzz_dtlsserver.dir/fuzz_dtlsserver.c.o CMakeFiles/fuzz_dtlsserver.dir/common.c.o CMakeFiles/fuzz_dtlsserver.dir/onefile.c.o  -o fuzz_dtlsserver  ../../library/libmbedtls.a ../../library/libmbedx509.a ../../crypto/library/libmbedcrypto.a 

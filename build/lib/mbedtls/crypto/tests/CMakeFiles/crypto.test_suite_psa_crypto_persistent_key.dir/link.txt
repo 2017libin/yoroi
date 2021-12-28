@@ -1,0 +1,1 @@
+/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow -Wno-unused-function  -rdynamic CMakeFiles/crypto.test_suite_psa_crypto_persistent_key.dir/test_suite_psa_crypto_persistent_key.c.o  -o crypto.test_suite_psa_crypto_persistent_key  ../library/libmbedcrypto.a 

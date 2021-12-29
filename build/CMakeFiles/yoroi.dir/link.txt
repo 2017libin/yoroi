@@ -1,1 +1,0 @@
-/usr/bin/cc   -rdynamic CMakeFiles/yoroi.dir/main.c.o CMakeFiles/yoroi.dir/src/T_tables.c.o CMakeFiles/yoroi.dir/src/yoroi.c.o CMakeFiles/yoroi.dir/src/mbedtls/hmac_drbg.c.o CMakeFiles/yoroi.dir/src/mbedtls/md.c.o CMakeFiles/yoroi.dir/src/mbedtls/md_wrap.c.o CMakeFiles/yoroi.dir/src/mbedtls/platform.c.o CMakeFiles/yoroi.dir/src/mbedtls/sm3.c.o  -o yoroi 

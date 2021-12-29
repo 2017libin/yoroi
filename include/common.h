@@ -6,6 +6,12 @@
 #include <string.h>
 #include "T_tables.h"
 
+#define DEBUG 0
+#if DEBUG
+  #define debug(...) printf(__VA_ARGS__)
+#else 
+  #define debug(...) ;
+#endif
 
 typedef unsigned int u32;
 typedef unsigned long u64;

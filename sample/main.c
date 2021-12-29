@@ -1,4 +1,5 @@
 #include "common.h"
+#include "kdf_ctr.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/entropy.h"
 
@@ -11,6 +12,19 @@ void print_bytes(unsigned char *data, size_t size){
       printf("0%x", data[i]);
   }
   printf("\n");
+}
+// 测试kdf_ctr功能
+void sample_kdf_ctr(){
+  size_t KI_len = 10;
+  size_t lable_len = 10;
+  size_t context_len = 10;
+  size_t KO_len = 20;
+  u8 KI[KI_len];
+  u8 KO[KO_len];
+  u8 lable[lable_len];
+  u8 context[context_len];
+  KDF_ctr(KI, KI_len, lable, lable_len, context, context_len, KO, KO_len);
+  print_bytes(KO, KO_len);
 }
 
 // 测试ctr_drbg功能
@@ -136,5 +150,7 @@ int main(){
 
   printf("S_16 sample:\n");
   sample_S16_SINV16();
+
+  sample_kdf_ctr();
   return 0;
 }

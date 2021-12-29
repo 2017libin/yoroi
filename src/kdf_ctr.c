@@ -2,6 +2,10 @@
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/entropy.h"
 
+int set_seed (void *entropy , unsigned char * seed, size_t seed_len){
+  
+}
+
 // input: s (seed) and x (input variable)
 // output: rand (rand bytes, the output of hash_drbg)
 // return: 0 if success, else -1

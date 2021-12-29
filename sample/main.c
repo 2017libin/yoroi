@@ -73,6 +73,13 @@ void sample_enc_dec() {
   u8 x[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
             0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
 
+  u8 rk_enc[6];
+  u8 rk_dec[6];
+  yoroi16_gen_roundkey_enc(key, rk_enc);
+  yoroi16_gen_roundkey_dec(key, rk_dec);
+  print_bytes(rk_enc, 6);
+  print_bytes(rk_dec, 6);
+
   print_bytes(x, 16);
 
   yoroi16_enc(x, key);
@@ -149,8 +156,8 @@ void sample_enc12_dec12() {
 
 
 int main(){
-  // printf("yoroi sample:\n");
-  // sample_enc_dec();
+  printf("yoroi sample:\n");
+  sample_enc_dec();
 
   // printf("wbyoroi sample:\n");
   // sample_wbenc_wbdec();

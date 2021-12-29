@@ -37,16 +37,16 @@ void present_keyschedule_12(
 }
 
 
-void gen_roundkey_enc(const u8 *master_key, u8 *round_key){
+void present_gen_roundkey_enc(const u8 *master_key, u8 *round_key){
   present_keyschedule_12(master_key, round_key);
 }
 
-void gen_roundkey_dec(const u8 *master_key, u8 *round_key){
+void present_gen_roundkey_dec(const u8 *master_key, u8 *round_key){
   int size = 3*(ROUNDS+1);
   u8 tmp[size];
 
   // generate encrypt roundkey
-  gen_roundkey_enc(master_key, tmp);
+  present_gen_roundkey_enc(master_key, tmp);
 
   // reverse the encrypt roundkey
   int count = size - 1;
@@ -70,7 +70,7 @@ void present_enc_12(u8 *state,const u8 *master_key) {  // the bit size of a bloc
   u32 t;
   u8 round_key[3*(ROUNDS+1)];
   // generateRoundKeys()
-  gen_roundkey_enc(master_key, round_key);
+  present_gen_roundkey_enc(master_key, round_key);
   // 0~(r-1)-th rounds, where r = 10
   for (int i = 0; i < ROUNDS; ++i) {
     // addRoundKey
@@ -117,7 +117,7 @@ void present_dec_12(u8 *state, const u8 *master_key) {
   u32 t1, t2;
   u8 round_key[3*(ROUNDS+1)];
   // generateRoundKeys()
-  gen_roundkey_dec(master_key, round_key);
+  present_gen_roundkey_dec(master_key, round_key);
 
   // 0~(r-1)-th rounds, where r = 10
   for (int i = 0; i < ROUNDS; ++i) {

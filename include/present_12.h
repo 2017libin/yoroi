@@ -9,8 +9,8 @@ void present_keyschedule_12(const u8 *master_key, u8 *round_key);
 
 // master_key：8*10-bit
 // round_key: 4*3*(ROUND+1)-bit
-void gen_roundkey_enc(const u8 *master_key, u8 *round_key);
-void gen_roundkey_dec(const u8 *master_key, u8 *round_key);
+void present_gen_roundkey_enc(const u8 *master_key, u8 *round_key);
+void present_gen_roundkey_dec(const u8 *master_key, u8 *round_key);
 
 // master_key: 80-bit
 // state: 12-bit

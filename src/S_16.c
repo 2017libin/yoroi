@@ -1,5 +1,6 @@
 #include "common.h"
 
+
 // key-dependent bijective 16-bit S-box
 void S_16(u8 *state, u8 *subkey) {
   u8 t0, t1;  // temporary var

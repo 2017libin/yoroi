@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow -Wno-unused-function  -rdynamic CMakeFiles/crypto.test_suite_pkcs1_v21.dir/test_suite_pkcs1_v21.c.o  -o crypto.test_suite_pkcs1_v21  ../library/libmbedcrypto.a 

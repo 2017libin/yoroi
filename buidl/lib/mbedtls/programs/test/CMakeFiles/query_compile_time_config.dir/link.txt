@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow  -rdynamic CMakeFiles/query_compile_time_config.dir/query_compile_time_config.c.o CMakeFiles/query_compile_time_config.dir/__/ssl/query_config.c.o  -o query_compile_time_config  ../../library/libmbedtls.a ../../library/libmbedx509.a ../../crypto/library/libmbedcrypto.a 

@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow -Wno-unused-function  -rdynamic CMakeFiles/crypto.test_suite_aes.xts.dir/test_suite_aes.xts.c.o  -o crypto.test_suite_aes.xts  ../library/libmbedcrypto.a 

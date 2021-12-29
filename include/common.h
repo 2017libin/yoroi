@@ -40,7 +40,8 @@ typedef unsigned char u8;
   }
 
 #define PRINT 0
-#define ROUNDS 1
+// the rounds of present_12
+#define ROUNDS 10
 #define OUT_LEN_OF_KDF 50  // byte-len
 
 #define GMul8(x, y) gf8mul[256*x + y]

@@ -6,7 +6,7 @@
 // 十六进制打印字节流
 void print_bytes(unsigned char *data, size_t size){
   for (int i = 0; i < size; ++i) {
-    if (data[i] > 9)
+    if (data[i] > 15)
       printf("%x", data[i]);
     else
       printf("0%x", data[i]);
@@ -126,31 +126,41 @@ void sample_S16_SINV16() {
 
 void sample_enc12_dec12() {
   u8 x[] = {0x0f, 0x03, 0x04};
-  u8 enck[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
-  u8 deck[] = {0x04, 0x05, 0x06, 0x01, 0x02, 0x03};
-  
+  u8 key[10];
+
+#if 0
+  // the test of 
+  u8 rk_enc[3*(ROUNDS+1)];
+  u8 rk_dec[3*(ROUNDS+1)];
+  gen_roundkey_enc(key, rk_enc);
+  gen_roundkey_dec(key, rk_dec);
+  print_bytes(rk_enc, 3*(ROUNDS+1));
+  print_bytes(rk_dec, 3*(ROUNDS+1));
+#endif 
+
   print_bytes(x, 3);
 
-  present_enc_12(x, enck);
+  present_enc_12(x, key);
   print_bytes(x, 3);
 
-  present_dec_12(x, deck);
+  present_dec_12(x, key);
   print_bytes(x, 3);
 }
 
-int main(){
-  printf("yoroi sample:\n");
-  sample_enc_dec();
 
-  printf("wbyoroi sample:\n");
-  sample_wbenc_wbdec();
+int main(){
+  // printf("yoroi sample:\n");
+  // sample_enc_dec();
+
+  // printf("wbyoroi sample:\n");
+  // sample_wbenc_wbdec();
 
   printf("present12 sample:\n");
   sample_enc12_dec12();
 
-  printf("S_16 sample:\n");
-  sample_S16_SINV16();
+  // printf("S_16 sample:\n");
+  // sample_S16_SINV16();
 
-  sample_kdf_ctr();
+  // sample_kdf_ctr();
   return 0;
 }

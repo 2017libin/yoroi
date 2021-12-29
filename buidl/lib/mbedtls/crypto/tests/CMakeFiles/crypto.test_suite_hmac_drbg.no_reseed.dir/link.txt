@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow -Wno-unused-function  -rdynamic CMakeFiles/crypto.test_suite_hmac_drbg.no_reseed.dir/test_suite_hmac_drbg.no_reseed.c.o  -o crypto.test_suite_hmac_drbg.no_reseed  ../library/libmbedcrypto.a 

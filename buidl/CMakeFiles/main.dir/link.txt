@@ -1,1 +1,0 @@
-/usr/bin/cc   -rdynamic CMakeFiles/main.dir/sample/main.c.o CMakeFiles/main.dir/src/S_16.c.o CMakeFiles/main.dir/src/T_tables.c.o CMakeFiles/main.dir/src/kdf_ctr.c.o CMakeFiles/main.dir/src/present_12.c.o CMakeFiles/main.dir/src/yoroi.c.o  -o main  lib/mbedtls/library/libmbedtls.a lib/mbedtls/library/libmbedx509.a lib/mbedtls/crypto/library/libmbedcrypto.a 

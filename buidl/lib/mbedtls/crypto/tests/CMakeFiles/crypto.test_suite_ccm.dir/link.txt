@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow -Wno-unused-function  -rdynamic CMakeFiles/crypto.test_suite_ccm.dir/test_suite_ccm.c.o  -o crypto.test_suite_ccm  ../library/libmbedcrypto.a 

@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow  -rdynamic CMakeFiles/fuzz_x509csr.dir/fuzz_x509csr.c.o CMakeFiles/fuzz_x509csr.dir/onefile.c.o  -o fuzz_x509csr  ../../library/libmbedtls.a ../../library/libmbedx509.a ../../crypto/library/libmbedcrypto.a 

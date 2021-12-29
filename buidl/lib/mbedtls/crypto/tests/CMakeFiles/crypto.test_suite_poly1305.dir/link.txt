@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -Wextra -Wwrite-strings -Wvla -Wlogical-op -Wshadow -Wno-unused-function  -rdynamic CMakeFiles/crypto.test_suite_poly1305.dir/test_suite_poly1305.c.o  -o crypto.test_suite_poly1305  ../library/libmbedcrypto.a 

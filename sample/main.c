@@ -2,6 +2,7 @@
 #include "kdf_ctr.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/entropy.h"
+#include "yoroi.h"
 
 // 十六进制打印字节流
 void print_bytes(unsigned char *data, size_t size){
@@ -13,6 +14,7 @@ void print_bytes(unsigned char *data, size_t size){
   }
   printf("\n");
 }
+
 // 测试kdf_ctr功能
 void sample_kdf_ctr(){
   size_t KI_len = 10;
@@ -20,10 +22,11 @@ void sample_kdf_ctr(){
   size_t context_len = 10;
   size_t KO_len = 20;
   u8 KI[80]= {1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10};
+  // u8 KI[10]={1,2,3,4,5,6,7,8,9,10};
   u8 KO[KO_len];
   u8 lable[10]= {1,2,3,4,5,6,7,8,9,10};
   u8 context[10]= {1,2,3,4,5,6,7,8,9,10};
-  PRF(KI, 80, lable, 10, KO, 20);
+  PRF(KI, 29, lable, 10, KO, 20);
   // KDF_ctr(KI, KI_len, lable, lable_len, context, context_len, KO, KO_len);
   print_bytes(KO, KO_len);
 }
@@ -70,16 +73,19 @@ void sample_ctr_drbg(){
 
 // 黑盒yoroi16功能正确性测试
 void sample_enc_dec() {
-  u8 key[6] = {0x11, 0x33, 0x55, 0x77, 0x99, 0xbb};
+  u8 key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
   u8 x[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
             0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
 
+#if 0
+  // test gen roundkey
   u8 rk_enc[6];
   u8 rk_dec[6];
   yoroi16_gen_roundkey_enc(key, rk_enc);
   yoroi16_gen_roundkey_dec(key, rk_dec);
   print_bytes(rk_enc, 6);
   print_bytes(rk_dec, 6);
+#endif
 
   print_bytes(x, 16);
 
@@ -123,6 +129,18 @@ void sample_S16_SINV16() {
                0x0e, 0x0f, 0x0c, 0x0d, 0x0a, 0x0b, 0x08, 0x09, 0x06, 0x07,
                0x04, 0x05, 0x02, 0x03, 0x00, 0x01};
 
+#if 0
+  u8 master_key[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+  u8 rk_enc[66];
+  u8 rk_dec[66];
+
+  yoroi16_gen_roundkey_enc(master_key, rk_enc);
+  yoroi16_gen_roundkey_dec(master_key, rk_dec);
+
+  print_bytes(rk_enc, 66);
+  print_bytes(rk_dec, 66);
+#endif
+
   print_bytes(x, 2);
 
   S_16(x, enck);
@@ -163,12 +181,12 @@ int main(){
   // printf("wbyoroi sample:\n");
   // sample_wbenc_wbdec();
 
-  printf("present12 sample:\n");
-  sample_enc12_dec12();
+  // printf("present12 sample:\n");
+  // sample_enc12_dec12();
 
   // printf("S_16 sample:\n");
   // sample_S16_SINV16();
 
-  sample_kdf_ctr();
+  // sample_kdf_ctr();
   return 0;
 }

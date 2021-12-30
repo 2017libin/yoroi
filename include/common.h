@@ -42,8 +42,9 @@ typedef unsigned char u8;
 #define PRINT 0
 // the rounds of present_12
 #define ROUNDS 10
-// the length of yoroi16 master_key
-#define K_len 6
+// the length of yoroi16 master_key and round_key
+#define K_len 16
+#define RK_len 3*66
 #define OUT_LEN_OF_KDF 50  // byte-len
 
 #define GMul8(x, y) gf8mul[256*x + y]

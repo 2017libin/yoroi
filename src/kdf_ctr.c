@@ -2,8 +2,9 @@
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/entropy.h"
 
-int set_seed (void *entropy , unsigned char * seed, size_t seed_len){
-  
+int set_seed (void *buf , unsigned char * seed, size_t seed_len){
+  memcpy(seed, buf, seed_len);
+  return 0;
 }
 
 // input: s (seed) and x (input variable)
@@ -14,6 +15,9 @@ int PRF(u8 *s, size_t s_len, u8 *x, size_t x_len, u8 *rand, size_t rand_len) {
   mbedtls_entropy_context *entropy_ctx =
       malloc(sizeof(mbedtls_entropy_context));
   mbedtls_ctr_drbg_context *drbg_ctx = malloc(sizeof(mbedtls_ctr_drbg_context));
+
+  u8 buf[s_len];
+  memcpy(buf, s, s_len);
 
   size_t byte_len = 50;
   unsigned char bytes[byte_len];
@@ -28,7 +32,7 @@ int PRF(u8 *s, size_t s_len, u8 *x, size_t x_len, u8 *rand, size_t rand_len) {
   mbedtls_ctr_drbg_init(drbg_ctx);
 
   // set the seed of drbg
-  ret = mbedtls_ctr_drbg_seed(drbg_ctx, mbedtls_entropy_func, entropy_ctx, s,
+  ret = mbedtls_ctr_drbg_seed(drbg_ctx, set_seed, buf, s,
                               s_len);
 
   if (ret == 0) {  // return 0 if success

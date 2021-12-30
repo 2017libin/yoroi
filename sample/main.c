@@ -19,11 +19,12 @@ void sample_kdf_ctr(){
   size_t lable_len = 10;
   size_t context_len = 10;
   size_t KO_len = 20;
-  u8 KI[KI_len];
+  u8 KI[80]= {1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10};
   u8 KO[KO_len];
-  u8 lable[lable_len];
-  u8 context[context_len];
-  KDF_ctr(KI, KI_len, lable, lable_len, context, context_len, KO, KO_len);
+  u8 lable[10]= {1,2,3,4,5,6,7,8,9,10};
+  u8 context[10]= {1,2,3,4,5,6,7,8,9,10};
+  PRF(KI, 80, lable, 10, KO, 20);
+  // KDF_ctr(KI, KI_len, lable, lable_len, context, context_len, KO, KO_len);
   print_bytes(KO, KO_len);
 }
 
@@ -168,6 +169,6 @@ int main(){
   // printf("S_16 sample:\n");
   // sample_S16_SINV16();
 
-  // sample_kdf_ctr();
+  sample_kdf_ctr();
   return 0;
 }

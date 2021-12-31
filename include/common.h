@@ -63,7 +63,10 @@ typedef unsigned char u8;
 #define MERGEU8(p, v) (((u32)(p) << 8) + ((u32)(v)&0xff))
 
 // split u16 u into u8 p,v
-#define SPLITU16(u, p, v) ((p) = (u8)((u) >> 8), v = (u8)((u)&0xff))
+#define SPLITU16(u, p, v) ((p) = (u8)(((u) >> 8)&0xff), v = (u8)((u)&0xff))
+
+// split u8 u into u4 p,v
+#define SPLITU8(u, p, v) ((p) = (u8)(((u) >> 4)&0xf), v = (u8)((u)&0xf))
 
 // the 8x8 MDS matrix for yoroi-16
 static const u8 M_88[] = {5, 4, 0xa, 6, 2, 0xd, 8, 3, 4, 5,   6,   0xa, 0xd, 2,

@@ -171,6 +171,10 @@ void yoroi16_wbenc(u8 *x) {
         SPLITU16(t1, x[j * 2], x[j * 2 + 1]);
       }
     }
+
+    // Linear layer
+    mul_M8(x);
+
     // Affine layer
     for (int j = 0; j < 8; ++j) {
       x[j * 2 + 1] ^= i;  // only disturb the lsb4
@@ -208,6 +212,9 @@ void yoroi16_wbdec(u8 *x) {
     for (int j = 0; j < 8; ++j) {
       x[j * 2 + 1] ^= 8 - i;  // only disturb the lsb4
     }
+
+    // Linear layer
+    mul_MINV8(x);
   }
   for (int j = 0; j < 8; ++j) {
     t1 = MERGEU8(x[j * 2], x[j * 2 + 1]);

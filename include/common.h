@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "T_tables.h"
 
 #define DEBUG 0
 #if DEBUG

@@ -2,6 +2,7 @@
 #include "kdf_ctr.h"
 #include "yoroi.h"
 #include "S_16.h"
+#include "T_tables.h"
 
 // master_key: K_len-byte
 // round_key: 6-byte，used in S1,S2 and S3
@@ -36,6 +37,190 @@ void yoroi16_gen_roundkey_dec(const u8 *master_key, u8 *round_key){
   }
 }
 
+// name：the T table name
+// T[]：include the T table elements
+void yoroi16_print_T_table(u32 T[], char *name){
+  char T0[10];
+
+  printf("unsigned int %s[65536] = {", name);
+  if (T[0] >= 0x1000){
+    printf("0x%x",T[0]);
+  }else if(T[0] >= 0x0100){
+    printf("0x0%x",T[0]);
+  }else if(T[0] >= 0x0010){
+    printf("0x00%x",T[0]);
+  }else{
+    printf("0x000%x",T[0]);
+  }
+
+  for (int i = 1; i < 65536; i++)
+  { 
+    if (T[i] >= 0x1000){
+      printf(", 0x%x",T[i]);
+    }else if(T[i] >= 0x0100){
+      printf(", 0x0%x",T[i]);
+    }else if(T[i] >= 0x0010){
+      printf(", 0x00%x",T[i]);
+    }else{
+      printf(", 0x000%x",T[i]);
+    }
+    
+    if((i+1) % 16 == 0)
+      printf("\n               ");
+  }
+  printf("};\n");
+}
+
+void yoroi16_gen_T_table(u8 key[], u8 pkey[], u32 T1[], u32 T2[], u32 T3[], u32 T1_inv[], u32 T2_inv[], u32 T3_inv[]){
+
+  // yoroi roundkey
+  u8 roundkey[RK_len];
+
+  // present12 key
+  // u8 pkey[10];
+
+  // rk1、rk2以及rk3分别是S1、S2以及S3的密钥
+  u8 rk1_enc[66];
+  u8 rk1_dec[66];
+  u8 rk2_enc[66];
+  u8 rk2_dec[66];  
+  u8 rk3_enc[66];
+  u8 rk3_dec[66];
+
+  yoroi16_gen_roundkey_enc(key, roundkey);
+  memcpy(rk1_enc, roundkey, 66);
+  memcpy(rk2_enc, roundkey + 66, 66);
+  memcpy(rk3_enc, roundkey + 66*2, 66);
+
+  yoroi16_gen_roundkey_dec(key, roundkey);
+  memcpy(rk3_dec, roundkey, 66);
+  memcpy(rk2_dec, roundkey + 66, 66);
+  memcpy(rk1_dec, roundkey + 66*2, 66);
+
+  // 2^16 = 65536
+  u8 x[2];  // 16-bit into two 8-bit x[0], x[1]
+  u8 t[3];  // 12-bit into three 3-bit t[0],t[1],t[3]
+
+  // gen T1
+  for(int i = 0; i < 65536; ++i){
+    SPLITU16(i, x[0], x[1]);
+
+    // pass S1
+    S_16(x, rk1_enc);
+
+    // pass Present12
+    SPLITU8(x[0], t[0], t[1]);
+    t[2] = (x[1] >> 4) & 0xf;
+    present_enc_12(t, pkey);
+
+    x[0] = MERGEU4(t[0], t[1]);
+    x[1] = MERGEU4(t[2], x[1]);
+    T1[i] = MERGEU8(x[0], x[1]);
+  }
+
+  // gen T2
+  for(int i = 0; i < 65536; ++i){
+    
+    SPLITU16(i, x[0], x[1]);
+
+    // pass present12_dec
+    SPLITU8(x[0], t[0], t[1]);
+    t[2] = (x[1] >> 4) & 0xf;
+    present_dec_12(t, pkey);
+
+    // pass S2
+    x[0] = MERGEU4(t[0], t[1]);
+    x[1] = MERGEU4(t[2], x[1]);
+    S_16(x, rk2_enc);
+
+    // pass Present12_enc
+    SPLITU8(x[0], t[0], t[1]);
+    t[2] = (x[1] >> 4) & 0xf;
+    present_enc_12(t, pkey);
+
+    x[0] = MERGEU4(t[0], t[1]);
+    x[1] = MERGEU4(t[2], x[1]);
+    T2[i] = MERGEU8(x[0], x[1]);
+  }
+
+  // gen T3
+  for(int i = 0; i < 65536; ++i){
+    
+    SPLITU16(i, x[0], x[1]);
+
+    // pass present12_dec
+    SPLITU8(x[0], t[0], t[1]);
+    t[2] = (x[1] >> 4) & 0xf;
+    present_dec_12(t, pkey);
+
+    // pass S3_inv
+    x[0] = MERGEU4(t[0], t[1]);
+    x[1] = MERGEU4(t[2], x[1]);
+    S_16(x, rk3_enc);
+
+    T3[i] = MERGEU8(x[0], x[1]);
+  }
+
+  // gen T3_inv
+  for(int i = 0; i < 65536; ++i){
+    // pass S3_inv
+    SPLITU16(i, x[0], x[1]);
+    SINV_16(x, rk3_dec);
+
+    // pass Present12
+    SPLITU8(x[0], t[0], t[1]);
+    t[2] = (x[1] >> 4) & 0xf;
+    present_enc_12(t, pkey);
+
+    x[0] = MERGEU4(t[0], t[1]);
+    x[1] = MERGEU4(t[2], x[1]);
+    T3_inv[i] = MERGEU8(x[0], x[1]);
+  }
+
+  // gen T2_inv
+  for(int i = 0; i < 65536; ++i){
+    
+    SPLITU16(i, x[0], x[1]);
+
+    // pass present12_dec
+    SPLITU8(x[0], t[0], t[1]);
+    t[2] = (x[1] >> 4) & 0xf;
+    present_dec_12(t, pkey);
+
+    // pass S2_inv
+    x[0] = MERGEU4(t[0], t[1]);
+    x[1] = MERGEU4(t[2], x[1]);
+    SINV_16(x, rk2_dec);
+
+    // pass Present12_enc
+    SPLITU8(x[0], t[0], t[1]);
+    t[2] = (x[1] >> 4) & 0xf;
+    present_enc_12(t, pkey);
+
+    x[0] = MERGEU4(t[0], t[1]);
+    x[1] = MERGEU4(t[2], x[1]);
+    T2_inv[i] = MERGEU8(x[0], x[1]);
+  }
+
+  // gen T1_inv
+  for(int i = 0; i < 65536; ++i){
+    
+    SPLITU16(i, x[0], x[1]);
+
+    // pass present12_dec
+    SPLITU8(x[0], t[0], t[1]);
+    t[2] = (x[1] >> 4) & 0xf;
+    present_dec_12(t, pkey);
+
+    // pass S1_inv
+    x[0] = MERGEU4(t[0], t[1]);
+    x[1] = MERGEU4(t[2], x[1]);
+    SINV_16(x, rk1_dec);
+
+    T1_inv[i] = MERGEU8(x[0], x[1]);
+  }
+
+}
 // the linear layer in yoroi16
 void mul_M8(u8 x[16]) {
   u8 x0 = GETU4(x[1]);
@@ -119,7 +304,7 @@ void yoroi16_enc(u8 *x, const u8 *key) {
 // dec in black-box context
 void yoroi16_dec(u8 *x, const u8 *key) {
   u32 t1;  // temporary var
-  
+
   u8 roundkey[RK_len];
   yoroi16_gen_roundkey_dec(key, roundkey);
 

@@ -3,6 +3,7 @@
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/entropy.h"
 #include "yoroi.h"
+#include "T_tables.h"
 
 // yoroi master_key
 u8 key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
@@ -76,9 +77,10 @@ void sample_ctr_drbg(){
 
 // 黑盒yoroi16功能正确性测试
 void sample_enc_dec() {
-  u8 x[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+  u8 x[16] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
             0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
-
+  u8 key[16] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+            0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
 #if 0
   // test gen roundkey
   u8 rk_enc[6];
@@ -99,11 +101,36 @@ void sample_enc_dec() {
 
 }
 
+void sample_print_T_table(){
+  u8 yoroi_key[16] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+            0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+  u32 present12_key[10];
+  u32 T1[65536];
+  u32 T2[65536];
+  u32 T3[65536];
+  u32 T1_inv[65536];
+  u32 T2_inv[65536];
+  u32 T3_inv[65536];
+
+  yoroi16_gen_T_table(yoroi_key, present12_key, T1, T2, T3, T1_inv, T2_inv, T3_inv);
+  yoroi16_print_T_table(T1, "T1");
+  yoroi16_print_T_table(T2, "T2");
+  yoroi16_print_T_table(T3, "T3");
+  yoroi16_print_T_table(T1_inv, "T1_inv");
+  yoroi16_print_T_table(T2_inv, "T2_inv");
+  yoroi16_print_T_table(T3_inv, "T3_inv");
+}
+
 // 白盒yoroi16功能正确性测试
 void sample_wbenc_wbdec() {
   u8 x[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
             0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
 
+  u8 key[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+            0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+  
+  // yoroi16_gen_T_table(key);
+  
   print_bytes(x, 16);
 
   yoroi16_wbenc(x);
@@ -175,141 +202,36 @@ void sample_enc12_dec12() {
   print_bytes(x, 3);
 }
 
-void sample_print_T_table(){
-
-  // yoroi roundkey
-  u8 roundkey[RK_len];
-  // present12 key
-  u8 pkey[10];
-
-  // rk1、rk2以及rk3分别是S1、S2以及S3的密钥
-  u8 rk1_enc[66];
-  u8 rk1_dec[66];
-  u8 rk2_enc[66];
-  u8 rk2_dec[66];  
-  u8 rk3_enc[66];
-  u8 rk3_dec[66];
-  yoroi16_gen_roundkey_enc(key, roundkey);
-  memcpy(rk1_enc, roundkey, 66);
-  memcpy(rk2_enc, roundkey + 66, 66);
-  memcpy(rk3_enc, roundkey + 66*2, 66);
-
-  yoroi16_gen_roundkey_dec(key, roundkey);
-  memcpy(rk3_dec, roundkey, 66);
-  memcpy(rk2_dec, roundkey + 66, 66);
-  memcpy(rk1_dec, roundkey + 66*2, 66);
-
-  // test rk1_enc、rk2_dec
-  u8 test[2] = {0x11, 0x34};
-  print_bytes(test, 2);
-  SINV_16(test, rk3_dec);
-  print_bytes(test, 2);
-  S_16(test, rk3_enc);
-  print_bytes(test, 2);
-
-  // 2^16 = 65536
-  u8 x[2];
-  u8 t[3];
-  u32 T1[65536];
-  u32 T3_inv[65536];
-  for(int i = 0; i < 65536; ++i){
-    SPLITU16(i, x[0], x[1]);
-    // print_bytes(x,2);
-    // pass Sbox
-    S_16(x, rk1_enc);
-
-    // pass Present12
-    SPLITU8(x[0], t[0], t[1]);
-    t[2] = (x[1] >> 4) & 0xf;
-    // print_bytes(x, 2);
-    // print_bytes(t, 3);
-
-    present_enc_12(t, pkey);
-    // print_bytes(t, 3);
-
-    x[0] = MERGEU4(t[0], t[1]);
-    x[1] = MERGEU4(t[2], x[1]);
-    // print_bytes(x, 2);
-
-    T1[i] = MERGEU8(x[0], x[1]);
-  }
-
-#if 0
-  // 测试T1正确性
-  int i = 0x5641;
-  // printf("T[0x1111] = %x\n", T1[i]);
-
-  SPLITU16(T1[i], x[0], x[1]);
-  SPLITU8(x[0], t[0], t[1]);
-  t[2] = (x[1] >> 4) & 0xf;
-  present_dec_12(t, pkey);
-  // print_bytes(t, 3);
-
-  x[0] = MERGEU4(t[0], t[1]);
-  x[1] = MERGEU4(t[2], x[1]);
-  // print_bytes(x,2);
-
-  // pass Sbox
-  SINV_16(x, rk1_dec);
-  print_bytes(x, 2);
-#endif
-
-  for(int i = 0; i < 65536; ++i){
-    SPLITU16(i, x[0], x[1]);
-    // print_bytes(x,2);
-    // pass Sbox
-    SINV_16(x, rk3_dec);
-
-    // pass Present12
-    SPLITU8(x[0], t[0], t[1]);
-    t[2] = (x[1] >> 4) & 0xf;
-    // print_bytes(x, 2);
-    // print_bytes(t, 3);
-
-    present_enc_12(t, pkey);
-    // print_bytes(t, 3);
-
-    x[0] = MERGEU4(t[0], t[1]);
-    x[1] = MERGEU4(t[2], x[1]);
-    // print_bytes(x, 2);
-
-    T3_inv[i] = MERGEU8(x[0], x[1]);
-  }
-
-#if 0
-  // 测试T1正确性
-  int i = 0x9906;
-  u8 test3[2] = {0x11, 0x33};
-  // printf("T[0x1111] = %x\n", T3_inv[i]);
-
-  S_16(test3, rk3_enc);
-  print_bytes(test3, 2);
-  // i = MERGEU8(test3[0], test3[1]);
+void sample_test_T(){
   
-  SPLITU16(T3_inv[i], x[0], x[1]);
-  print_bytes(x, 2);
-  SPLITU8(x[0], t[0], t[1]);
+  u32 i = 0x3211;
+  // printf("T[0x1111] = %x\n", T1[i]);
+  i = T3[T2[T1[i]]];
+  i = T1_inv[T2_inv[T3_inv[i]]];
+  // SPLITU16(i, x[0], x[1]);
 
-  t[2] = (x[1] >> 4) & 0xf;
-  present_dec_12(t, pkey);
-  // print_bytes(t, 3);
+  // SPLITU8(x[0], t[0], t[1]);
+  // t[2] = (x[1] >> 4) & 0xf;
+  // present_dec_12(t, pkey);
+  // // print_bytes(t, 3);
 
-  x[0] = MERGEU4(t[0], t[1]);
-  x[1] = MERGEU4(t[2], x[1]);
+  // x[0] = MERGEU4(t[0], t[1]);
+  // x[1] = MERGEU4(t[2], x[1]);
   // print_bytes(x,2);
 
   // pass Sbox
-  // S_16(x, rk3_enc);
-  print_bytes(x, 2);
-#endif
-
+  // SINV_16(x, rk3_dec);
+  // SINV_16(x, rk2_dec);
+  // SINV_16(x, rk1_dec);
+  // print_bytes(x, 2);
+  printf("0x%x\n", i);
 }
 int main(){
-  // printf("yoroi sample:\n");
-  // sample_enc_dec();
+  printf("yoroi samplex:\n");
+  sample_enc_dec();
 
-  // printf("wbyoroi sample:\n");
-  // sample_wbenc_wbdec();
+  printf("wbyoroi sample:\n");
+  sample_wbenc_wbdec();
 
   // printf("present12 sample:\n");
   // sample_enc12_dec12();
@@ -319,6 +241,7 @@ int main(){
 
   // sample_kdf_ctr();
 
-  sample_print_T_table();
+  // sample_print_T_table();
+  // sample_test_T();
   return 0;
 }

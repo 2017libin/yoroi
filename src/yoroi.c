@@ -119,7 +119,7 @@ void yoroi16_enc(u8 *x, const u8 *key) {
 // dec in black-box context
 void yoroi16_dec(u8 *x, const u8 *key) {
   u32 t1;  // temporary var
-
+  
   u8 roundkey[RK_len];
   yoroi16_gen_roundkey_dec(key, roundkey);
 

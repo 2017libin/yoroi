@@ -200,17 +200,18 @@ void sample_print_T_table(){
   memcpy(rk1_dec, roundkey + 66*2, 66);
 
   // test rk1_enc、rk2_dec
-  u8 test[2] = {0x12, 0x34};
+  u8 test[2] = {0x11, 0x34};
   print_bytes(test, 2);
-  S_16(test, rk1_enc);
+  SINV_16(test, rk3_dec);
   print_bytes(test, 2);
-  SINV_16(test, rk1_dec);
+  S_16(test, rk3_enc);
   print_bytes(test, 2);
 
   // 2^16 = 65536
   u8 x[2];
   u8 t[3];
-  int T1[65536];
+  u32 T1[65536];
+  u32 T3_inv[65536];
   for(int i = 0; i < 65536; ++i){
     SPLITU16(i, x[0], x[1]);
     // print_bytes(x,2);
@@ -250,6 +251,55 @@ void sample_print_T_table(){
 
   // pass Sbox
   SINV_16(x, rk1_dec);
+  print_bytes(x, 2);
+#endif
+
+  for(int i = 0; i < 65536; ++i){
+    SPLITU16(i, x[0], x[1]);
+    // print_bytes(x,2);
+    // pass Sbox
+    SINV_16(x, rk3_dec);
+
+    // pass Present12
+    SPLITU8(x[0], t[0], t[1]);
+    t[2] = (x[1] >> 4) & 0xf;
+    // print_bytes(x, 2);
+    // print_bytes(t, 3);
+
+    present_enc_12(t, pkey);
+    // print_bytes(t, 3);
+
+    x[0] = MERGEU4(t[0], t[1]);
+    x[1] = MERGEU4(t[2], x[1]);
+    // print_bytes(x, 2);
+
+    T3_inv[i] = MERGEU8(x[0], x[1]);
+  }
+
+#if 0
+  // 测试T1正确性
+  int i = 0x9906;
+  u8 test3[2] = {0x11, 0x33};
+  // printf("T[0x1111] = %x\n", T3_inv[i]);
+
+  S_16(test3, rk3_enc);
+  print_bytes(test3, 2);
+  // i = MERGEU8(test3[0], test3[1]);
+  
+  SPLITU16(T3_inv[i], x[0], x[1]);
+  print_bytes(x, 2);
+  SPLITU8(x[0], t[0], t[1]);
+
+  t[2] = (x[1] >> 4) & 0xf;
+  present_dec_12(t, pkey);
+  // print_bytes(t, 3);
+
+  x[0] = MERGEU4(t[0], t[1]);
+  x[1] = MERGEU4(t[2], x[1]);
+  // print_bytes(x,2);
+
+  // pass Sbox
+  // S_16(x, rk3_enc);
   print_bytes(x, 2);
 #endif
 

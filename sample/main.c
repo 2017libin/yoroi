@@ -226,8 +226,10 @@ void sample_test_T(){
   // print_bytes(x, 2);
   printf("0x%x\n", i);
 }
+
+#if 1
 int main(){
-  printf("yoroi samplex:\n");
+  printf("yoroi sample:\n");
   sample_enc_dec();
 
   printf("wbyoroi sample:\n");
@@ -245,3 +247,4 @@ int main(){
   // sample_test_T();
   return 0;
 }
+#endif

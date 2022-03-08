@@ -339,7 +339,7 @@ void yoroi16_dec(u8 *x, const u8 *key) {
 
 // regard the x[i*2]||x[i*+1] as a block, where i in [0, 7]
 void yoroi16_wbenc(u8 *x) {
-  u32 t1;  // temporary var
+  int16_t t1;  // temporary var
   // the 1~(R-1)-th rounds, R = 8
   for (int i = 1; i < 8; ++i) {
     // S-layer

@@ -14,7 +14,7 @@
 
 typedef unsigned int u32;
 typedef unsigned long u64;
-typedef unsigned short int u16;
+typedef unsigned short u16;
 typedef unsigned char u8;
 
 // 8 bytes -> long unsigned int
@@ -60,7 +60,7 @@ typedef unsigned char u8;
 #define MERGEU4(p, v) (((u8)(p) << 4) + ((u8)(v)&0xf))
 
 // concatenation of u8 p,v
-#define MERGEU8(p, v) (((u32)(p) << 8) + ((u32)(v)&0xff))
+#define MERGEU8(p, v) (((u16)(p) << 8) + ((u16)(v)&0xff))
 
 // split u16 u into u8 p,v
 #define SPLITU16(u, p, v) ((p) = (u8)(((u) >> 8)&0xff), v = (u8)((u)&0xff))

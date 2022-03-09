@@ -221,6 +221,7 @@ void yoroi16_gen_T_table(u8 key[], u8 pkey[], u32 T1[], u32 T2[], u32 T3[], u32 
   }
 
 }
+
 // the linear layer in yoroi16
 void mul_M8(u8 x[16]) {
   u8 x0 = GETU4(x[1]);
@@ -268,7 +269,6 @@ void yoroi16_enc(u8 *x, const u8 *key) {
   u8 roundkey[RK_len];
   yoroi16_gen_roundkey_enc(key, roundkey);
 
-  debug("111\n");
   // the 1~(R-1)-th rounds, R = 8
   for (int i = 1; i < 8; ++i) {
     // S-layer
@@ -291,7 +291,6 @@ void yoroi16_enc(u8 *x, const u8 *key) {
     }
 
   }
-  debug("222\n");
 
   // S-layer
   for (int j = 0; j < 8; ++j) {
@@ -337,9 +336,9 @@ void yoroi16_dec(u8 *x, const u8 *key) {
   // ...
 }
 
-// regard the x[i*2]||x[i*+1] as a block, where i in [0, 7]
+// regard the x[i*2]||x[i*2+1] as a block, where i in [0, 7]
 void yoroi16_wbenc(u8 *x) {
-  int16_t t1;  // temporary var
+  u16 t1;  // temporary var
   // the 1~(R-1)-th rounds, R = 8
   for (int i = 1; i < 8; ++i) {
     // S-layer
@@ -376,7 +375,7 @@ void yoroi16_wbenc(u8 *x) {
 }
 
 void yoroi16_wbdec(u8 *x) {
-  u32 t1;  // temporary var
+  u16 t1;  // temporary var
   // the 1~(R-1)-th rounds, R = 8
   for (int i = 1; i < 8; ++i) {
     // S-layer
@@ -393,6 +392,7 @@ void yoroi16_wbdec(u8 *x) {
         SPLITU16(t1, x[j * 2], x[j * 2 + 1]);
       }
     }
+
     // Affine layer
     for (int j = 0; j < 8; ++j) {
       x[j * 2 + 1] ^= 8 - i;  // only disturb the lsb4
@@ -401,6 +401,7 @@ void yoroi16_wbdec(u8 *x) {
     // Linear layer
     mul_MINV8(x);
   }
+
   for (int j = 0; j < 8; ++j) {
     t1 = MERGEU8(x[j * 2], x[j * 2 + 1]);
     t1 = T1_inv[t1];  // T3 is 16-bit table

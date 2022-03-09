@@ -11,7 +11,7 @@ SET(BUILD_NAME main)
 #
 message(STATUS "CMAKE_BUILD_TYPE:\t" ${CMAKE_BUILD_TYPE})
 
-set(CMAKE_C_FLAGS_RELEASE     "-O2")
+set(CMAKE_C_FLAGS_RELEASE     "-O2 -g")
 
 ########################## source file  ##########################
 AUX_SOURCE_DIRECTORY(sample SRCS)

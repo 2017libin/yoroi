@@ -130,12 +130,14 @@ void sample_wbenc_wbdec() {
             0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
   
   // yoroi16_gen_T_table(key);
-  
+  printf("11.123\n");
   print_bytes(x, 16);
 
+  printf("22.123\n");
   yoroi16_wbenc(x);
   print_bytes(x, 16);
-
+  
+  printf("33.123\n");
   yoroi16_wbdec(x);
   print_bytes(x, 16);
 }
@@ -229,8 +231,8 @@ void sample_test_T(){
 
 #if 1
 int main(){
-  printf("yoroi sample:\n");
-  sample_enc_dec();
+  // printf("yoroi sample:\n");
+  // sample_enc_dec();
 
   printf("wbyoroi sample:\n");
   sample_wbenc_wbdec();

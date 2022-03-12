@@ -1,0 +1,30 @@
+[[Tigress]] TOPLEVEL Building universe of C objects ...
+[[Tigress]] TOPLEVEL ... done building universe of C objects.
+[[Tigress]] TOPLEVEL Loading externals ...
+[[Tigress]] TOPLEVEL ... done loading externals
+[[Tigress]] TOPLEVEL Attempting to load MyJit library ...
+[[Tigress]] TOPLEVEL ... MyJit library was not loaded.
+[[Tigress]] TOPLEVEL Initializing obfuscation ...
+[[Tigress]] TOPLEVEL ... done initializing obfuscation.
+[[Tigress]] TOPLEVEL Running 1 obfuscation tasks ...
+[[Tigress]] TASK (1) [
+[[Tigress]]    kind    = EncodeData
+[[Tigress]]    prefix  = ""
+[[Tigress]]    funSpec = []
+[[Tigress]]    globalVarSpec = [id(T1),id(T2),id(T3),id(T1_inv),id(T2_inv),id(T3_inv)]
+[[Tigress]]    localVarSpec  = {}
+[[Tigress]]    exclude = []
+[[Tigress]]    funs    = []
+[[Tigress]]    options = [prefix=;verbosity=None;statistics=None;transformationKind=Ident;transformationNumber=0;kinds=[integer];codecs=[add];
+[[Tigress]] ]
+[[Tigress]]    BEGIN TRANSFORM ()
+[[Tigress]]       OPTIONS: [prefix=_1_;verbosity=1;statistics=0;transformationKind=EncodeData;transformationNumber=1;kinds=[integer];codecs=[add];
+[[Tigress]]       Modified Function Implementations: [yoroi16_wbdec,yoroi16_wbenc]
+[[Tigress]]       Modified Function Specifications: []
+[[Tigress]]       New Functions: []
+[[Tigress]]       New Types: []
+[[Tigress]]       New Global Variables: []
+[[Tigress]]    END TRANSFORM ()
+[[Tigress]] TOPLEVEL ... done running obfuscation tasks.
+[[Tigress]] TOPLEVEL Saving C objects to output file ...
+[[Tigress]] TOPLEVEL ... done saving C objects.

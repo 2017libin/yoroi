@@ -6,7 +6,8 @@
 #include "yoroi.h"
 #include "T_tables.h"
 
-void test(){
+// test the result of inverse of T
+void test_correct(){
   u8 yoroi_key[16] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
             0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
   u32 present12_key[10];
@@ -36,6 +37,10 @@ void test(){
   yoroi16_print_T_table(T3_b, "T3_inv");
 }
 
+// test the time of gen inverse of T
+void test_time(){
+  
+}
 #if 0
 int main(){
     test();

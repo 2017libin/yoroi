@@ -38,9 +38,6 @@ void test_correct(){
 }
 
 // test the time of gen inverse of T
-void test_time(){
-  
-}
 #if 0
 int main(){
     test();

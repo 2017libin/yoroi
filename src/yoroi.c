@@ -152,12 +152,12 @@ void yoroi16_gen_T_table(u8 key[], u8 pkey[], u32 T1[], u32 T2[], u32 T3[], u32 
     SPLITU8(x[0], t[0], t[1]);
     t[2] = (x[1] >> 4) & 0xf;
     present_dec_12(t, pkey);
-
+    
     // pass S3_inv
     x[0] = MERGEU4(t[0], t[1]);
     x[1] = MERGEU4(t[2], x[1]);
     S_16(x, rk3_enc);
-
+    
     T3[i] = MERGEU8(x[0], x[1]);
   }
 
